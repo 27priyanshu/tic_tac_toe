@@ -1,5 +1,5 @@
-import 'dart:html';
-
+// import 'dart:html';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tic_tac_toe/constants/colors.dart';
@@ -21,9 +21,32 @@ class _GameScreenState extends State<GameScreen> {
   String resultDeclaration = '';
   bool winnerFound = false;
 
+  static const maxSeconds = 30;
+  int seconds = maxSeconds;
+  Timer? timer;
+
   static var customFontWhite = GoogleFonts.coiny(
     textStyle: TextStyle(color: Colors.white, letterSpacing: 3, fontSize: 28),
   );
+
+  void startTimer() {
+    timer = Timer.periodic(Duration(seconds: 1), (_) {
+      setState(() {
+        if (seconds > 0) {
+          seconds--;
+        } else {
+          stopTimer();
+        }
+      });
+    });
+  }
+
+  void stopTimer() {
+    resetTimer();
+    timer?.cancel();
+  }
+
+  void resetTimer() => seconds = maxSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +132,9 @@ class _GameScreenState extends State<GameScreen> {
                   },
                 ),
               ),
+              SizedBox(
+                height: 20,
+              ),
               Expanded(
                 flex: 2,
                 child: Center(
@@ -119,25 +145,27 @@ class _GameScreenState extends State<GameScreen> {
                         resultDeclaration,
                         style: customFontWhite,
                       ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 32, vertical: 16)),
-                        onPressed: () {
-                          _clearBoard();
-                        },
-                        child: Text(
-                          'Play Again!',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
+                      SizedBox(height: 40),
+
+                      _buildTimer()
+
+                      // ElevatedButton(
+                      //     style: ElevatedButton.styleFrom(
+                      //         backgroundColor: Colors.white,
+                      //         padding: EdgeInsets.symmetric(
+                      //             horizontal: 32, vertical: 16)),
+                      //     onPressed: () {
+                      //       _clearBoard();
+                      //     },
+                      //     child: Text(
+                      //       'Play Again!',
+                      //       style: TextStyle(
+                      //         fontSize: 20,
+                      //         color: Colors.black,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -150,17 +178,21 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _tapped(int index) {
-    setState(() {
-      if (oTurn && displayXO[index] == '') {
-        displayXO[index] = '0';
-        filledBoxes++;
-      } else if (!oTurn && displayXO[index] == '') {
-        displayXO[index] = 'X';
-        filledBoxes++;
-      }
-      oTurn = !oTurn;
-      _checkWinner();
-    });
+    final isRunning = timer == null ? false : timer!.isActive;
+
+    if (isRunning) {
+      setState(() {
+        if (oTurn && displayXO[index] == '') {
+          displayXO[index] = '0';
+          filledBoxes++;
+        } else if (!oTurn && displayXO[index] == '') {
+          displayXO[index] = 'X';
+          filledBoxes++;
+        }
+        oTurn = !oTurn;
+        _checkWinner();
+      });
+    }
   }
 
 //check 1st row
@@ -265,5 +297,47 @@ class _GameScreenState extends State<GameScreen> {
       resultDeclaration = '';
     });
     filledBoxes = 0;
+  }
+
+  Widget _buildTimer() {
+    final isRunning = timer == null ? false : timer!.isActive;
+
+    return isRunning
+        ? SizedBox(
+            width: 100,
+            height: 100,
+            child: Stack(fit: StackFit.expand, children: [
+              CircularProgressIndicator(
+                value: 1 - seconds / maxSeconds,
+                valueColor: AlwaysStoppedAnimation(Colors.white),
+                strokeWidth: 8,
+                backgroundColor: MainColor.accentColor,
+              ),
+              Center(
+                child: Text(
+                  '$seconds',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 50),
+                ),
+              )
+            ]))
+        : ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16)),
+            onPressed: () {
+              startTimer();
+              _clearBoard();
+            },
+            child: Text(
+              'Play Again!',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.black,
+              ),
+            ),
+          );
   }
 }
