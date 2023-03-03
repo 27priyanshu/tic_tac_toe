@@ -67,7 +67,7 @@ class _GameScreenState extends State<GameScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          'Player O',
+                          'PlayerO',
                           style: customFontWhite,
                         ),
                         Text(
@@ -77,13 +77,13 @@ class _GameScreenState extends State<GameScreen> {
                       ],
                     ),
                     SizedBox(
-                      width: 20,
+                      width: 2.1,
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          'Player X',
+                          'PlayerX',
                           style: customFontWhite,
                         ),
                         Text(
